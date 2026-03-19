@@ -1,13 +1,15 @@
-import { use, useEffect, useMemo, useState } from 'react'
-import CATEGORIES from "./utils"
-import { IoMdClose } from "react-icons/io";
+import { useEffect, useMemo, useState } from 'react'
+import { CATEGORIES, AIRLINE_CPM } from "./utils"
+import clsx from 'clsx'
 
 
-export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCategory, onRemove }) => {
+export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCategory }) => {
 
+    const [categoryId, setCategoryId] = useState(selectedCategory.category)
     const [value, setValue] = useState(null)
     const [multiplier, setMultiplier] = useState(null)
     const [partnerSiteName, setPartnerSiteName] = useState("")
+    const [isNameConfirmed, setIsNameConfirmed] = useState(false)
     const [isReal, setIsReal] = useState(true)
     const [dolarValue, setDolarValue] = useState(null)
     const [bonusCia, setBonusCia] = useState(null)
@@ -15,14 +17,39 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
 
     const conversionUrl = import.meta.env.VITE_AWESOMEAPI_URL
     const conversionToken = import.meta.env.VITE_AWESOMEAPI_TOKEN
-
-    const url = `${conversionUrl}/USD-BRL?token=${conversionToken}`
+    
+    let url
+    if (conversionUrl && conversionToken) {
+        url = `${conversionUrl}/USD-BRL?token=${conversionToken}`
+    } else {
+        url = `${conversionUrl}/USD-BRL`
+    }
 
     const fullObjectCategory = useMemo(() => {
-        return CATEGORIES.find((e) => e.id == selectedCategory.category)
-    }, [selectedCategory])
+        return CATEGORIES.find((e) => e.id == categoryId)
+    }, [categoryId])
+
+    const handleNameConfirm = () => {
+        if (partnerSiteName.trim()) {
+            setIsNameConfirmed(true)
+        }
+    }
+    const shouldShowFullForm = fullObjectCategory?.id == 2 || isNameConfirmed
 
     const handleResult = () => { 
+        if (!value || value === 0) {
+
+            const filtered = resultByCategory.filter((e) => e.categoryId != selectedCategory.id)
+            setResultByCategory(filtered)
+            return
+        }
+
+        if (fullObjectCategory?.id != 3 && (!multiplier || multiplier === 0)) {
+            const filtered = resultByCategory.filter((e) => e.categoryId != selectedCategory.id)
+            setResultByCategory(filtered)
+            return
+        }
+
         if (!isReal && (!dolarValue || dolarValue === 0)) {
             console.log('Aguardando valor do dólar...')
             return
@@ -31,27 +58,21 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
         const alreadyExists = resultByCategory.find((e) => e.categoryId == selectedCategory.id)
         const calculatedValue = isReal ? value : value / dolarValue
 
+        const resultData = {
+            categoryId: selectedCategory.id,
+            partnerSiteName: fullObjectCategory?.id == 2 ? 'Shopping Livelo' : partnerSiteName,
+            value: isReal ? calculatedValue : value,
+            totalPointsAmount: calculatedValue * (multiplier || 1),
+            bonusCia: (1 + (bonusCia?.replace('%', '') / 100)) || 1,
+            priceForAThousand,
+            id: crypto.randomUUID()
+        }
+
         if (alreadyExists) {
             const filtered = resultByCategory.filter((e) => e.categoryId != selectedCategory.id)
-            setResultByCategory([...filtered, {
-                categoryId: selectedCategory.id,
-                partnerSiteName: selectedCategory.id == 2 ? 'Shopping Livelo' : partnerSiteName,
-                value: calculatedValue,
-                totalPointsAmount: calculatedValue * multiplier,
-                bonusCia: (1 + (bonusCia?.replace('%', '') / 100)) || 1,
-                priceForAThousand,
-                id: crypto.randomUUID()
-            }])
+            setResultByCategory([...filtered, resultData])
         } else {
-            setResultByCategory(prev => [...prev, {
-                categoryId: selectedCategory.id,
-                partnerSiteName: selectedCategory.id == 2 ? 'Shopping Livelo' : partnerSiteName,
-                value: calculatedValue,
-                totalPointsAmount: calculatedValue * multiplier,
-                bonusCia: (1 + (bonusCia?.replace('%', '') / 100)) || 1,
-                priceForAThousand,
-                id: crypto.randomUUID()
-            }])
+            setResultByCategory(prev => [...prev, resultData])
         }
     }
 
@@ -66,109 +87,112 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
     }, [url])
 
     useEffect(() => {
-        if (value && multiplier && dolarValue) {
-            handleResult()
-        }
-    }, [isReal, dolarValue])
-
-    useEffect(() => {
-        console.log('resultByCategory atualizado:', resultByCategory)
-    }, [resultByCategory])
+        handleResult()
+    }, [value, multiplier, isReal, dolarValue, bonusCia, priceForAThousand, categoryId, partnerSiteName])
 
     return (
-        <div className="flex flex-col gap-2 border border-slate-300 rounded-md p-4 shadow-lg">
-            <div className='flex justify-end cursor-pointer' onClick={() => onRemove(selectedCategory.id)}>
-                    <IoMdClose />
-                </div>
-            <div className='flex flex-col gap-4 flex-1 '>
-                
-                {fullObjectCategory?.id == 1 ? (
-                    <div className='flex flex-col justify-between'>
-                        <label htmlFor="partnerSiteName">Qual o nome do Site Parceiro?</label>
-                        <input
-                            id="partnerSiteName"
-                            type="text"
-                            className="border border-slate-300 rounded-md p-2"
-                            value={partnerSiteName}
-                            onChange={(e) => setPartnerSiteName(e.target.value)}
-                            onBlur={handleResult}
-                        />
-                    </div>
-                ) : fullObjectCategory?.id == 2 ? (
-                    <div className='flex gap-2 justify-center items-center pb-4'>
-                        <h3 className='font-bold text-xl text-center'>Shopping Livelo</h3>
-                    </div>
-                ) : (
-                    <div className='flex flex-col justify-between'>
-                        <label htmlFor="partnerSiteName">Nome do Site?</label>
-                        <input
-                            id="partnerSiteName"
-                            type="text"
-                            className="border border-slate-300 rounded-md p-2"
-                            value={partnerSiteName}
-                            onChange={(e) => setPartnerSiteName(e.target.value)}
-                            onBlur={handleResult}
-                        />
-                    </div>
-                )}
-
-                <div className='flex flex-col justify-between'>
-                    <label htmlFor='productValue'>Qual o valor do produto?</label>
+        <div className="flex flex-col bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-xl max-w-md">
+            {!shouldShowFullForm ? (
+                <div className='flex flex-col gap-2'>
+                    <label htmlFor="partnerSiteName" className="title-text">
+                        {fullObjectCategory?.id == 1 ? "Site Parceiro" : "Loja sem parceria"}
+                    </label>
                     <input
-                        id="productValue"
-                        type="number"
-                        className="border border-slate-300 rounded-md p-2"
-                        value={value}
-                        onChange={(e) => setValue(Number(e.target.value))}
-                        onBlur={handleResult}
+                        id="partnerSiteName"
+                        type="text"
+                        className="input-fields mt-3"
+                        value={partnerSiteName}
+                        placeholder='Amazon'
+                        onChange={(e) => setPartnerSiteName(e.target.value)}
+                        onBlur={handleNameConfirm}
                     />
                 </div>
-                {fullObjectCategory?.id != 3 && (
-                    <div className='flex flex-col justify-between'>
-                        
-                        <label className='flex items-center gap-2'>
-                            <span>Dolar</span>
-                            <input 
-                                type='checkbox' 
-                                checked={isReal} 
-                                className='toggle' 
-                                onChange={() => {
-                                    setIsReal(!isReal)
-                                }} 
+            ) : (
+                <div className='flex flex-col justify-around gap-4 h-full'>
+                    <div >
+                        <div>
+                            <h3 className='title-text'>
+                                {fullObjectCategory?.id == 2 ? 'Livelo' : partnerSiteName}
+                            </h3>
+                        </div>
+
+                        <div className='flex flex-col justify-between'>
+                            <label htmlFor='productValue' className="title-text">Valor do produto</label>
+                            <input
+                                id="productValue"
+                                type="number"
+                                className="input-fields"
+                                value={value || ""}
+                                onChange={(e) => setValue(e.target.value ? Number(e.target.value) : null)}
                             />
-                            <span>Real</span>
-                        </label>
-
-                        <label htmlFor='multiplier'>Pontos por {isReal ? "R$" : "$"}?</label>
-                        <input
-                            id="multiplier"
-                            type="number"
-                            className="border border-slate-300 rounded-md p-2"
-                            value={multiplier}
-                            onChange={(e) => setMultiplier(Number(e.target.value))}
-                            onBlur={handleResult}
-                        />
-                        <label htmlFor='bonusCia'>Bonus Companhia Aerea</label>
-                        <input
-                            id="bonusCia"
-                            type="text"
-                            className="border border-slate-300 rounded-md p-2"
-                            value={bonusCia}
-                            onChange={(e) => setBonusCia(e.target.value)}
-                            onBlur={handleResult}
-                        />
-
-                        <label htmlFor='priceForAThousand'>Valor Milheiro CIA</label>
-                        <input
-                            id="priceForAThousand"
-                            type="number"
-                            className="border border-slate-300 rounded-md p-2"
-                            onChange={(e) => setPriceForAThousand(Number(e.target.value))}
-                            onBlur={handleResult}
-                        />
+                        </div>
                     </div>
-                )}
-            </div>
+
+                    <div className={clsx('border-t border-gray-700', {
+                        'hidden': fullObjectCategory?.id == 3
+                    })}>
+                        {fullObjectCategory?.id != 3 && (
+                            <div className='flex flex-col justify-between gap-3'>
+                                
+                                <div className='flex flex-col mt-4'>
+                                    <label className='flex items-center gap-2 text-gray-300 '>
+                                        <span className='title-text'>Dolar</span>
+                                        <input 
+                                            type='checkbox' 
+                                            checked={isReal} 
+                                            className='toggle toggle-xs toggle-primary' 
+                                            onChange={() => {
+                                                setIsReal(!isReal)
+                                            }} 
+                                        />
+                                        <span className='title-text'>Real</span>
+                                    </label>
+                                </div>
+                                
+                                <div className='flex flex-col'>
+                                    <label htmlFor='multiplier' className="title-text">Pontos por {isReal ? "R$" : "$"}?</label>
+                                    <input
+                                        id="multiplier"
+                                        type="number"
+                                        className="input-fields"
+                                        value={multiplier || ""}
+                                        onChange={(e) => setMultiplier(e.target.value ? Number(e.target.value) : null)}
+                                    />
+                                </div>
+
+                                <div className='flex flex-col'>
+                                    <label htmlFor='bonusCia' className="title-text">Bonus na transferência (%)</label>
+                                    <input
+                                        id="bonusCia"
+                                        type="text"
+                                        className="input-fields"
+                                        value={bonusCia || ""}
+                                        onChange={(e) => setBonusCia(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className='flex flex-col'>
+                                    <label htmlFor='priceForAThousand' className="title-text">Transferir para</label>
+                                    
+                                    <select 
+                                        id='priceForAThousand'
+                                        className='input-fields'
+                                        value={priceForAThousand || ""}
+                                        onChange={(e) => setPriceForAThousand(e.target.value ? Number(e.target.value) : null)}
+                                    >
+                                        <option>Selecione</option>
+                                        {AIRLINE_CPM.map((option) => (
+                                            <option key={option.id} value={option.value}>
+                                                {option.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

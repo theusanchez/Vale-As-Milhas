@@ -3,9 +3,6 @@ import clsx from 'clsx'
 import { FaCheck } from 'react-icons/fa'
 import { IoMdClose } from "react-icons/io";
 
-
-
-
 export const ResultModal = ({ resultByCategory, onClose }) => {
 
     const [betterOption, setBetterOption] = useState(null)
@@ -37,66 +34,75 @@ export const ResultModal = ({ resultByCategory, onClose }) => {
     }, [resultByCategory])
 
     return (
-        <div className='fixed inset-0 bg-black/80 bg-opacity-50 flex items-center justify-center z-50' 
+        <div className='fixed inset-0 bg-black/80 bg-opacity-50 flex items-center justify-center z-50'
             onClick={onClose}
         >
-            <div className='bg-base-200 max-w-4xl max-h-[90vh] overflow-auto rounded-lg shadow-2xl' 
+            <div className='bg-gray-800 max-w-4xl max-h-[90vh] overflow-auto rounded-lg shadow-2xl'
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className='flex flex-col gap-4 border border-slate-300 rounded-md p-4 shadow-lg'>
-                <div className='flex justify-end cursor-pointer' onClick={onClose}>
-                    <IoMdClose />
-                </div>
+                <div className='flex flex-col gap-4 border border-gray-700 rounded-md p-4 shadow-lg'>
+                    <div className='flex justify-end cursor-pointer text-gray-400 hover:text-white transition-colors' onClick={onClose}>
+                        <IoMdClose />
+                    </div>
                     <div className='flex justify-center'>
-                        <h1 className='text-2xl font-bold'>Resultado</h1>
+                        <h1 className='text-2xl font-bold text-white'>Resultado</h1>
                     </div>
                     <div className='flex flex-row gap-4 '>
 
                         {resultByCategory.map((result) => (
-                            <div className={clsx('shadow-lg',{
-                                'bg-base-300': betterOption?.option === result.partnerSiteName,
+                            <div className={clsx('shadow-lg rounded-md', {
+                                'bg-gray-700 ring-2 ring-purple-500': betterOption?.option === result.partnerSiteName,
+                                'bg-gray-800': betterOption?.option !== result.partnerSiteName,
                             })}>
-                                
-                                <div 
-                                    key={result.categoryId} 
-                                    className='flex flex-col gap-2 border border-slate-300 rounded-md p-4 w-58'
+
+                                <div
+                                    key={result.categoryId}
+                                    className={clsx('flex flex-col gap-2 border border-gray-600 rounded-md p-4 w-58', {
+                                        'h-full': result.categoryId === 3
+                                    })}
                                 >
                                     <div className='flex flex-row'>
-                                        <h2 className='text-xl font-bold'>{result.partnerSiteName}</h2>
+                                        <h2 className='text-xl font-bold text-white'>{result.partnerSiteName}</h2>
                                         {betterOption?.option === result.partnerSiteName && (
-                                            <p className='text-green-600 p-1 text-xs'><FaCheck /></p>
+                                            <p className='text-green-500 p-1 text-xs'><FaCheck /></p>
                                         )}
                                     </div>
-                                    
-                                    <div className='flex flex-col'>
-                                        <p className='text-xs'>Valor: </p>
-                                        <p className='font-bold'>R${result.value}</p>
-                                    </div>
-                                    <div>
-                                        <p className='text-xs'>Pontos brutos</p>
-                                        <p className='font-bold'>{result.totalPointsAmount}</p>
-                                    </div>
-                                    <div>
-                                        <p className='text-xs'>Pontos gerados</p>
-                                        <p className='font-bold'>{result.totalPointsAmount * result.bonusCia}</p>
 
+                                    <div className='flex flex-col'>
+                                        <p className='text-xs text-gray-400'>Valor: </p>
+                                        <p className='font-bold text-white'>R${result.value}</p>
                                     </div>
+                                    {result.categoryId !== 3 && (
+                                        <div> 
+
+                                            <div>
+                                                <p className='text-xs text-gray-400'>Pontos brutos</p>
+                                                <p className='font-bold text-white'>{result.totalPointsAmount.toFixed(0)}</p>
+                                            </div>
+                                            <div>
+                                                <p className='text-xs text-gray-400'>Pontos gerados</p>
+                                                <p className='font-bold text-white'>{(result.totalPointsAmount * result.bonusCia).toFixed(0)}</p>
+
+                                            </div>
+                                        </div>
+                                    )}
+                                    </div>
+
                                 </div>
-                            </div>
                         ))}
 
                     </div>
                     <div className='flex justify-center flex-col gap-2 items-center 
-                            border-slate-300 p-2 bg-base-300 rounded-md shadow-lg'
+                            border-gray-600 p-2 bg-gray-700 rounded-md shadow-lg'
                     >
-                        <h2>A melhor opção é 
-                            <span className='font-bold text-purple-600'> {betterOption?.option}</span>.
+                        <h2 className='text-gray-200'>A melhor opção é
+                            <span className='font-bold text-purple-400'> {betterOption?.option}</span>.
                         </h2>
-                        <p>O valor final descontando os pontos gerados é de 
-                            <span className='font-bold text-purple-600'>    R${betterOption?.totalValue.toFixed(2)}</span>.
+                        <p className='text-gray-200'>O valor final descontando os pontos gerados é de
+                            <span className='font-bold text-purple-400'>    R${betterOption?.totalValue.toFixed(2)}</span>.
                         </p>
-                        <p>Você ganharia <span className='font-bold text-purple-600'>R${betterOption?.pointsValues.toFixed(2)}</span> ao vender essas milhas.</p>
-                        
+                        <p className='text-gray-200'>Você ganharia <span className='font-bold text-purple-400'>R${betterOption?.pointsValues.toFixed(2)}</span> ao vender essas milhas.</p>
+
                     </div>
                 </div>
             </div>

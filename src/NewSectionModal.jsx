@@ -1,4 +1,4 @@
-import CATEGORIES from "./utils"
+import { CATEGORIES } from "./utils"
 
 
 export const NewSectionModal = ({setSelectedCategory, selectedCategory, onClose, setIsProductModalOpen, numberOfProductSections, resultByCategory}) => {

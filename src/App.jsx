@@ -1,78 +1,46 @@
-import { useEffect, useState } from "react";
-import { FaRegPlusSquare } from "react-icons/fa";
+import { useState } from "react";
 import { ProductInput } from "./ProductInput";
 import { ResultModal } from "./ResultModal";
-import { NewSectionModal } from "./NewSectionModal";
+import { CATEGORIES } from "./utils";
 
 
 function App() {
 
-    const [selectedCategory, setSelectedCategory] = useState([])
-    const [numberOfProductSections, setNumberOfProductSections] = useState(0)
+    const [selectedCategory, setSelectedCategory] = useState([
+        { id: 1, category: "1" },
+        { id: 2, category: "2" },
+        { id: 3, category: "3" }
+    ])
     const [resultByCategory, setResultByCategory] = useState([])
-    const [isSectionModalOpen, setIsSectionModalOpen] = useState(false)
-    const [isProductModalOpen, setIsProductModalOpen] = useState(false)
     const [isResultModalOpen, setIsResultModalOpen] = useState(false)
 
-    const handleRemoveCategory = (categoryIdToRemove) => {
-        setSelectedCategory(prev => 
-            prev.filter(cat => cat.id !== categoryIdToRemove)
-        )
-        
-        setResultByCategory(prev => 
-            prev.filter(result => result.categoryId !== categoryIdToRemove)
-        )
-    }
-
     return (
-        <section className="flex flex-col items-center gap-4 p-4 bg-base-200 h-screen">
+        <section className="flex flex-col items-center gap-4 p-4 bg-gray-900 min-h-screen">
             <div className="flex flex-col items-center justify-center gap-4">
-                <h1 className="text-4xl font-bold ">
-                    Vale as <span className="text-purple-600">Milhas?</span>
+                <h1 className="text-4xl font-bold text-white">
+                    Vale as <span className="text-purple-500">Milhas?</span>
                 </h1>
-                <p className="text-lg ">
+                <p className="text-lg text-gray-300">
                     Descubra se vale a pena comprar pelo site parceiro para gerar milhas
                 </p>
             </div>
 
-            <div 
-                className="flex flex-row justify-center gap-2 items-center btn btn-ghost border border-slate-300" 
-                onClick={() => {
-                    setNumberOfProductSections(prev => prev + 1)
-                    setIsSectionModalOpen(true)
-                }}>
-                <FaRegPlusSquare className="text-2xl"  />
-                <h3>Adicionar Nova Sessão</h3>
-            </div>
-
-            {isSectionModalOpen && 
-                <NewSectionModal 
-                    onClose={() => setIsSectionModalOpen(false)} 
-                    setSelectedCategory={setSelectedCategory} 
-                    setIsProductModalOpen={setIsProductModalOpen}
-                    numberOfProductSections={numberOfProductSections}
-                    resultByCategory={resultByCategory}
-                />
-            }
-
-            <div className="flex flex-row justify-between gap-4">
-                {isProductModalOpen && 
-                    selectedCategory.map((category) => (
-                        <ProductInput 
-                            key={category.id}
-                            selectedCategory={category}
-                            onRemove={handleRemoveCategory}
-                            setResultByCategory={setResultByCategory}
-                            resultByCategory={resultByCategory}
-                        />
-                    ))
-                }
+            <div className="flex flex-row flex-wrap justify-center gap-4 w-full max-w-6xl">
+                {selectedCategory.map((category) => (
+                    <ProductInput 
+                        key={category.id}
+                        selectedCategory={category}
+                        setResultByCategory={setResultByCategory}
+                        resultByCategory={resultByCategory}
+                        allCategories={CATEGORIES}
+                    />
+                ))}
             </div>
 
             <div>
                 <button 
-                    disabled= {numberOfProductSections < 2} 
-                    className="btn btn-primary" 
+                    disabled={resultByCategory.length < 2} 
+                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-lg transition-colors" 
                     onClick={() => setIsResultModalOpen(true)}>
                         Calcular
                 </button>
