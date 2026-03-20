@@ -16,7 +16,8 @@ export const ResultModal = ({ resultByCategory, onClose }) => {
                 option: result.partnerSiteName,
                 pointsValues: ((result.totalPointsAmount * result.bonusCia) / 1000) * result.priceForAThousand,
                 totalValue: result.value - ((result.totalPointsAmount * result.bonusCia) / 1000) * result.priceForAThousand,
-                originalValue: result.value
+                originalValue: result.value,
+                categoryId: result.categoryId
             })
         })
 
@@ -73,22 +74,27 @@ export const ResultModal = ({ resultByCategory, onClose }) => {
                                         <p className='font-bold text-white'>R${result.value}</p>
                                     </div>
                                     {result.categoryId !== 3 && (
-                                        <div> 
+                                        <div>
 
                                             <div>
-                                                <p className='text-xs text-gray-400'>Pontos brutos</p>
+                                                <p className='text-xs text-gray-400'>Pontos</p>
                                                 <p className='font-bold text-white'>{result.totalPointsAmount.toFixed(0)}</p>
                                             </div>
                                             <div>
-                                                <p className='text-xs text-gray-400'>Pontos gerados</p>
+                                                <p className='text-xs text-gray-400'>Pontos gerados (c/ bonus)</p>
                                                 <p className='font-bold text-white'>{(result.totalPointsAmount * result.bonusCia).toFixed(0)}</p>
-
+                                            </div>
+                                            <div>
+                                                <p className='text-xs text-gray-400'>Custo Efetivo</p>
+                                                <p className='font-bold text-white'>
+                                                    {`R$ ${(result.value - ((result.totalPointsAmount * result.bonusCia) / 1000) * result.priceForAThousand).toFixed(2)}`}
+                                                </p>
                                             </div>
                                         </div>
                                     )}
-                                    </div>
-
                                 </div>
+
+                            </div>
                         ))}
 
                     </div>
@@ -98,10 +104,15 @@ export const ResultModal = ({ resultByCategory, onClose }) => {
                         <h2 className='text-gray-200'>A melhor opção é
                             <span className='font-bold text-purple-400'> {betterOption?.option}</span>.
                         </h2>
-                        <p className='text-gray-200'>O valor final descontando os pontos gerados é de
-                            <span className='font-bold text-purple-400'>    R${betterOption?.totalValue.toFixed(2)}</span>.
-                        </p>
-                        <p className='text-gray-200'>Você ganharia <span className='font-bold text-purple-400'>R${betterOption?.pointsValues.toFixed(2)}</span> ao vender essas milhas.</p>
+                        {betterOption?.categoryId !== 3 && (
+                            <div>
+                                <p className='text-gray-200'>O valor final descontando os pontos gerados é de
+                                    <span className='font-bold text-purple-400'>    R${betterOption?.totalValue.toFixed(2)}</span>.
+                                </p>
+                                
+                                <p className='text-gray-200'>Você ganharia <span className='font-bold text-purple-400'>R${betterOption?.pointsValues.toFixed(2)}</span> ao vender essas milhas.</p>
+                            </div>
+                        )}
 
                     </div>
                 </div>

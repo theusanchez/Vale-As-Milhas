@@ -18,12 +18,9 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
     const conversionUrl = import.meta.env.VITE_AWESOMEAPI_URL
     const conversionToken = import.meta.env.VITE_AWESOMEAPI_TOKEN
     
-    let url
-    if (conversionUrl && conversionToken) {
-        url = `${conversionUrl}/USD-BRL?token=${conversionToken}`
-    } else {
-        url = `${conversionUrl}/USD-BRL`
-    }
+    const url = conversionToken
+        ? `${conversionUrl}/USD-BRL?token=${conversionToken}`
+        : `${conversionUrl}/USD-BRL`
 
     const fullObjectCategory = useMemo(() => {
         return CATEGORIES.find((e) => e.id == categoryId)
@@ -91,7 +88,7 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
     }, [value, multiplier, isReal, dolarValue, bonusCia, priceForAThousand, categoryId, partnerSiteName])
 
     return (
-        <div className="flex flex-col bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-xl max-w-md">
+        <div className="flex flex-col bg-gray-800 border border-gray-700 rounded-lg p-4 shadow-xl">
             {!shouldShowFullForm ? (
                 <div className='flex flex-col gap-2'>
                     <label htmlFor="partnerSiteName" className="title-text">
@@ -108,8 +105,8 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
                     />
                 </div>
             ) : (
-                <div className='flex flex-col justify-around gap-4 h-full'>
-                    <div >
+                <div className='flex flex-col gap-4 h-full'>
+                    <div>
                         <div>
                             <h3 className='title-text'>
                                 {fullObjectCategory?.id == 2 ? 'Livelo' : partnerSiteName}
@@ -127,6 +124,15 @@ export const ProductInput = ({ selectedCategory, setResultByCategory, resultByCa
                             />
                         </div>
                     </div>
+
+                    {fullObjectCategory?.id == 3 && (
+                        <div className='h-full flex flex-col'>
+
+                            <div className='rounded bg-gray-700/25 flex h-[20%] items-center justify-center shadow-xl p-2'>
+                                <p className='text-gray-400 text-xs'>Essa opção nao gera pontos/milhas  </p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className={clsx('border-t border-gray-700', {
                         'hidden': fullObjectCategory?.id == 3
